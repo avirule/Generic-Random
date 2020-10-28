@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Generic_Random
 {
@@ -53,17 +54,22 @@ namespace Generic_Random
             _NextIntP = 21;
         }
 
-        public T Next<T>() where T : unmanaged
+        public unsafe T Next<T>() where T : unmanaged
         {
             if (typeof(T) == typeof(float))
             {
                 float sample = InternalSample() * (1f / _MBIG);
-                return Unsafe.As<float, T>(ref sample);
+                return (T)(object)sample;
             }
             else if (typeof(T) == typeof(double))
             {
                 double sample = InternalSample() * (1d / _MBIG);
-                return Unsafe.As<double, T>(ref sample);
+                return (T)(object)sample;
+            }
+            else if (typeof(T) == typeof(decimal))
+            {
+                decimal sample = InternalSample() * (1.0m / _MBIG);
+                return (T)(object)sample;
             }
             else if (typeof(T) == typeof(long))
             {
@@ -72,7 +78,7 @@ namespace Generic_Random
                 int sampleHigh = InternalSample();
 
                 long sample = ((long)sampleHigh << 32) | sampleLow;
-                return Unsafe.As<long, T>(ref sample);
+                return (T)(object)sample;
             }
             else if (typeof(T) == typeof(ulong))
             {
@@ -81,7 +87,7 @@ namespace Generic_Random
                 int sampleHigh = InternalSample();
 
                 ulong sample = ((ulong)sampleHigh << 32) | sampleLow;
-                return Unsafe.As<ulong, T>(ref sample);
+                return (T)(object)sample;
             }
             else if ((typeof(T) == typeof(int))
                      || (typeof(T) == typeof(uint))
@@ -93,7 +99,16 @@ namespace Generic_Random
                 int sample = InternalSample();
                 return Unsafe.As<int, T>(ref sample);
             }
-            else throw new NotSupportedException("T is of unsupported type.");
+            else
+            {
+                Span<byte> data = stackalloc byte[sizeof(T)];
+                Next(data);
+
+                return MemoryMarshal.Read<T>(data);
+            }
+
+            // -or-
+            // else throw new NotSupportedException("T is of unsupported type.");
         }
 
         public void Next<T>(Span<T> fill) where T : unmanaged
