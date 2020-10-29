@@ -16,9 +16,9 @@ namespace Generic_Random
         //
         // Member Variables
         //
+        private readonly int[] _SeedArray = new int[56];
         private int _NextInt;
         private int _NextIntP;
-        private int[] _SeedArray = new int[56];
 
         public GenericRandom(int seed)
         {
@@ -126,14 +126,13 @@ namespace Generic_Random
 
         private int InternalSample()
         {
-            int retVal;
             int locINext = _NextInt;
             int locINextp = _NextIntP;
 
             if (++locINext >= 56) locINext = 1;
             if (++locINextp >= 56) locINextp = 1;
 
-            retVal = _SeedArray[locINext] - _SeedArray[locINextp];
+            int retVal = _SeedArray[locINext] - _SeedArray[locINextp];
 
             if (retVal == _MBIG) retVal--;
             if (retVal < 0) retVal += _MBIG;
