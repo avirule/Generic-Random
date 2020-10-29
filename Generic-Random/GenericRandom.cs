@@ -56,6 +56,12 @@ namespace Generic_Random
 
         public unsafe T Next<T>() where T : unmanaged
         {
+            // This method is only marked `unsafe` to facilitate the `sizeof(T)`
+            // declaration at the end of the method, used to handle arbitrary T types.
+            //
+            // If instead inclusive-only (i.e. throw NotSupported for unsupported T) then
+            // this method wouldn't need to be marked `unsafe`.
+
             if (typeof(T) == typeof(float))
             {
                 float sample = InternalSample() * (1f / _MBIG);
